@@ -32,6 +32,8 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(
         null=True, blank=True, upload_to=profile_custom_path
     )
+    followers = models.ManyToManyField("self", related_name="following", blank=True)
+    following = models.ManyToManyField("self", related_name="followers", blank=True)
 
     def __str__(self):
-        return f"Profile of {self.username}"
+        return self.username

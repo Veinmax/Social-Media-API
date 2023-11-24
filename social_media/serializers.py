@@ -3,6 +3,8 @@ from social_media.models import UserProfile
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    # followers = serializers.SlugRelatedField()
+
     class Meta:
         model = UserProfile
         fields = (
@@ -14,4 +16,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "phone",
             "created_at",
             "profile_picture",
+            "followers",
+            "following",
         )
+        read_only_fields = ("followers",)
