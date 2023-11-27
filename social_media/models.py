@@ -15,16 +15,16 @@ def profile_custom_path(instance, filename):
     )
 
 
-class UserProfile(models.Model):
+class Profile(models.Model):
     class GenderChoices(models.Choices):
         MALE = "Male"
         FEMALE = "Female"
 
     owner = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile_data"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
     username = models.CharField(max_length=60)
-    grade = models.CharField(max_length=10, choices=GenderChoices.choices)
+    gender = models.CharField(max_length=10, choices=GenderChoices.choices)
     bio = models.TextField()
     lives_in = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
@@ -32,8 +32,9 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(
         null=True, blank=True, upload_to=profile_custom_path
     )
-    followers = models.ManyToManyField("self", related_name="following", blank=True)
-    following = models.ManyToManyField("self", related_name="followers", blank=True)
+    following = models.ManyToManyField(
+        "self", symmetrical=False, blank=True, related_name="followers"
+    )
 
     def __str__(self):
         return self.username

@@ -8,17 +8,20 @@ from rest_framework.response import Response
 
 from social_media.permissions import IsOwnerOrIfAuthenticatedReadOnly
 
-from social_media.models import UserProfile
-from social_media.serializers import UserProfileSerializer
+from social_media.models import Profile
+from social_media.serializers import (
+    ProfileSerializer,
+    ProfileDetailSerializer,
+    ProfileListSerializer,
+)
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
     permission_classes = (IsOwnerOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
-        """Retrieve the movies with filters"""
         username = self.request.query_params.get("username")
 
         queryset = self.queryset
@@ -28,51 +31,38 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
         return queryset.distinct()
 
-    def perform_create(self, serializer):
-        # if UserProfile.objects.filter(owner=self.request.user).exists():
-        #     raise ValidationError("You already have a profile.")
-        # serializer.save(owner=self.request.user)
-        user = self.request.user
-        profile, created = UserProfile.objects.get_or_create(user)
-        if created:
-            profile.save()
-        serializer.instance = profile
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ProfileListSerializer
 
-    @action(methods=["POST"], detail=True)
+        if self.action == "retrieve":
+            return ProfileDetailSerializer
+        return super().get_serializer_class()
+
+    def perform_create(self, serializer):
+        if Profile.objects.filter(owner=self.request.user).exists():
+            raise ValidationError("You already have a profile.")
+        serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=["get"])
     def follow(self, request, pk=None):
-        # user = request.user
-        # profile = UserProfile.objects.get(pk=pk)
-        profile = self.get_object()
-        user_to_follow = get_object_or_404(settings.AUTH_USER_MODEL, pk=pk)
-        print(user_to_follow, self.request.user)
-        if self.request.user != user_to_follow:
-            profile.followers.add(user_to_follow)
-            return Response("You are follow", status=status.HTTP_200_OK)
+        profile_to_follow = self.get_object()
+
+        if profile_to_follow == self.request.user.profile:
+            return Response(
+                {"detail": "You cannot follow yourself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        self.request.user.profile.following.add(profile_to_follow)
         return Response(
-            "You cannot follow your self", status=status.HTTP_400_BAD_REQUEST
+            {"detail": "You are now following this user"}, status=status.HTTP_200_OK
         )
 
-        # if profile.owner != user:
-        #     if not user.following.filter(pk=pk).exists():
-        #         user.following.add(pk)
-        #
-        #         return Response({"message": "You have followed this user."})
-        #
-        #     return Response({"message": "You are already following this user."})
-        #
-        # return Response({"message": "You cannot follow yourself."})
-
-    @action(methods=["POST"], detail=True)
+    @action(detail=True, methods=["get"])
     def unfollow(self, request, pk=None):
-        user = request.user
-        profile = UserProfile.objects.get(pk=pk)
-
-        if profile.owner != user:
-            if user.following.filter(pk=pk).exists():
-                user.following.remove(pk)
-                profile.followers.remove(user)
-                return Response({"message": "You have unfollowed this user."})
-            else:
-                return Response({"message": "You are not following this user."})
-        else:
-            return Response({"message": "You cannot unfollow yourself."})
+        profile_to_unfollow = self.get_object()
+        self.request.user.profile.following.remove(profile_to_unfollow)
+        return Response(
+            {"detail": "You are now unfollowing this user"}, status=status.HTTP_200_OK
+        )

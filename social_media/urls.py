@@ -1,10 +1,10 @@
 from django.urls import path, include
-from social_media.views import UserProfileViewSet
+from social_media.views import ProfileViewSet
 from rest_framework import routers
 
 
 router = routers.DefaultRouter()
-router.register("profiles", UserProfileViewSet)
+router.register("profiles", ProfileViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

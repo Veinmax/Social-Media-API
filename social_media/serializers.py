@@ -1,22 +1,51 @@
 from rest_framework import serializers
-from social_media.models import UserProfile
+from social_media.models import Profile
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    # followers = serializers.SlugRelatedField()
-
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
+        model = Profile
         fields = (
             "id",
             "username",
-            "grade",
+            "gender",
             "bio",
             "lives_in",
             "phone",
             "created_at",
             "profile_picture",
-            "followers",
             "following",
         )
-        read_only_fields = ("followers",)
+
+
+class ProfileListSerializer(ProfileSerializer):
+    class Meta:
+        model = Profile
+        fields = (
+            "id",
+            "username",
+            "gender",
+            "bio",
+            "profile_picture",
+        )
+
+
+class ProfileDetailSerializer(ProfileSerializer):
+    class Meta:
+        model = Profile
+        fields = (
+            "id",
+            "username",
+            "gender",
+            "bio",
+            "lives_in",
+            "phone",
+            "created_at",
+            "profile_picture",
+            "following",
+            "followers",
+        )
+        read_only_fields = (
+            "id",
+            "followers",
+        )

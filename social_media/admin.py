@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from social_media.models import UserProfile
+from social_media.models import Profile
 
-admin.site.register(UserProfile)
+admin.site.register(Profile)
