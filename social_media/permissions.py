@@ -11,3 +11,12 @@ class IsOwnerOrIfAuthenticatedReadOnly(BasePermission):
             )
             or (obj.owner == request.user)
         )
+
+
+class IsOwnerOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+
+        if request.method in ("PUT", "PATCH", "DELETE"):
+            return request.user == obj.owner

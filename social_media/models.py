@@ -38,3 +38,25 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.username
+
+
+def post_custom_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    return os.path.join(
+        "uploads",
+        "post_images",
+        f"{slugify(instance.owner.profile.username)}-{uuid.uuid4()}{extension}",
+    )
+
+
+class Post(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
+    )
+    content = models.TextField()
+    post_picture = models.ImageField(null=True, blank=True, upload_to=post_custom_path)
+    post_date = models.DateField(auto_now_add=True)
+    category = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.owner.profile.username}'s post"

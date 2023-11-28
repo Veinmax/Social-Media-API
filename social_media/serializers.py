@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from social_media.models import Profile
+from social_media.models import Profile, Post
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -49,3 +49,9 @@ class ProfileDetailSerializer(ProfileSerializer):
             "id",
             "followers",
         )
+
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ("id", "content", "post_picture", "category")

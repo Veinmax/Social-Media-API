@@ -6,13 +6,14 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from social_media.permissions import IsOwnerOrIfAuthenticatedReadOnly
+from social_media.permissions import IsOwnerOrIfAuthenticatedReadOnly, IsOwnerOrReadOnly
 
-from social_media.models import Profile
+from social_media.models import Profile, Post
 from social_media.serializers import (
     ProfileSerializer,
     ProfileDetailSerializer,
     ProfileListSerializer,
+    PostSerializer,
 )
 
 
@@ -66,3 +67,23 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "You are now unfollowing this user"}, status=status.HTTP_200_OK
         )
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
+    lookup_field = "id"
+
+    def get_queryset(self):
+        category = self.request.query_params.get("category")
+
+        queryset = self.queryset
+
+        if category:
+            queryset = queryset.filter(category__icontains=category)
+
+        return queryset.distinct()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
