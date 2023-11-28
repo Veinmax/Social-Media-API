@@ -60,3 +60,27 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.owner.profile.username}'s post"
+
+
+class Comment(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="comments", on_delete=models.CASCADE
+    )
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
+    content = models.TextField()
+    comment_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.owner.profile.username}'s comment on {self.post}"
+
+
+class Like(models.Model):
+    post = models.ForeignKey(Post, related_name="likes", on_delete=models.CASCADE)
+    like = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="likes",
+        on_delete=models.CASCADE,
+        default=None,
+        blank=True,
+        null=True,
+    )

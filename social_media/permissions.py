@@ -20,3 +20,11 @@ class IsOwnerOrReadOnly(BasePermission):
 
         if request.method in ("PUT", "PATCH", "DELETE"):
             return request.user == obj.owner
+
+
+class IsOwnerLikedOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+
+        return obj.like == request.user

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from social_media.models import Profile, Post
+from social_media.models import Profile, Post, Comment, Like
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -51,7 +51,26 @@ class ProfileDetailSerializer(ProfileSerializer):
         )
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    commented_by = serializers.ReadOnlyField(source="owner.profile.username")
+
+    class Meta:
+        model = Comment
+        fields = ("id", "content", "comment_date", "commented_by", "post")
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    like = serializers.ReadOnlyField(source="like.profile.username")
+
+    class Meta:
+        model = Like
+        fields = ("id", "post", "like")
+
+
 class PostSerializer(serializers.ModelSerializer):
+    comments = CommentSerializer(many=True, read_only=True)
+    likes = LikeSerializer(many=True, read_only=True)
+
     class Meta:
         model = Post
-        fields = ("id", "content", "post_picture", "category")
+        fields = ("id", "content", "post_picture", "category", "comments", "likes")

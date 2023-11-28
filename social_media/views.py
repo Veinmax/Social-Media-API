@@ -6,14 +6,20 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from social_media.permissions import IsOwnerOrIfAuthenticatedReadOnly, IsOwnerOrReadOnly
+from social_media.permissions import (
+    IsOwnerOrIfAuthenticatedReadOnly,
+    IsOwnerOrReadOnly,
+    IsOwnerLikedOrReadOnly,
+)
 
-from social_media.models import Profile, Post
+from social_media.models import Profile, Post, Comment, Like
 from social_media.serializers import (
     ProfileSerializer,
     ProfileDetailSerializer,
     ProfileListSerializer,
     PostSerializer,
+    CommentSerializer,
+    LikeSerializer,
 )
 
 
@@ -87,3 +93,30 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class LikeViewSet(viewsets.ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    permission_classes = (IsOwnerLikedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, pk=self.request.data["post"])
+        user = self.request.user
+
+        already_liked = Like.objects.filter(like=user, post=post).exists()
+        if already_liked:
+            # Remove the existing like
+            existing_like = Like.objects.get(like=user, post=post)
+            existing_like.delete()
+
+        serializer.save(like=user, post=post)
