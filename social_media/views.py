@@ -1,4 +1,5 @@
 from django.conf import settings
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -74,6 +75,19 @@ class ProfileViewSet(viewsets.ModelViewSet):
             {"detail": "You are now unfollowing this user"}, status=status.HTTP_200_OK
         )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "username",
+                type=str,
+                description="Filtering by username",
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -93,6 +107,19 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "category",
+                type=str,
+                description="Filtering by category",
+                required=False,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -118,5 +145,5 @@ class LikeViewSet(viewsets.ModelViewSet):
             # Remove the existing like
             existing_like = Like.objects.get(like=user, post=post)
             existing_like.delete()
-
-        serializer.save(like=user, post=post)
+        else:
+            serializer.save(like=user, post=post)
