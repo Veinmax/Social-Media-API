@@ -1,4 +1,3 @@
-from django.urls import path, include
 from social_media.views import ProfileViewSet, PostViewSet, CommentViewSet, LikeViewSet
 from rest_framework import routers
 
@@ -9,8 +8,6 @@ router.register("posts", PostViewSet)
 router.register("comments", CommentViewSet)
 router.register("likes", LikeViewSet)
 
-urlpatterns = [
-    path("", include(router.urls)),
-]
+urlpatterns = router.urls
 
 app_name = "social_media"
