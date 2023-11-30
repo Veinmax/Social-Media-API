@@ -48,8 +48,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def perform_create(self, serializer):
-        if Profile.objects.filter(owner=self.request.user).exists():
-            raise ValidationError("You already have a profile.")
         serializer.save(owner=self.request.user)
 
     @action(detail=True, methods=["get"])

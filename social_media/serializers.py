@@ -1,8 +1,18 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from social_media.models import Profile, Post, Comment, Like
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(ProfileSerializer, self).validate(attrs=attrs)
+
+        if Profile.objects.filter(owner=self.context["request"].user).exists():
+            raise ValidationError({"error": "You already have a profile."})
+
+        return data
+
     class Meta:
         model = Profile
         fields = (
