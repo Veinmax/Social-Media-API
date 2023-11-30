@@ -138,10 +138,8 @@ class LikeViewSet(viewsets.ModelViewSet):
         post = get_object_or_404(Post, pk=self.request.data["post"])
         user = self.request.user
 
-        already_liked = Like.objects.filter(like=user, post=post).exists()
-        if already_liked:
-            # Remove the existing like
-            existing_like = Like.objects.get(like=user, post=post)
-            existing_like.delete()
+        likes = Like.objects.filter(like=user, post=post)
+        if likes:
+            likes.delete()
         else:
             serializer.save(like=user, post=post)
