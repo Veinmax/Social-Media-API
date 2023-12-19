@@ -1,6 +1,6 @@
 # Social-Media-API
 
-Social Media API written on DRF
+This Django project provides a complete RESTful API for a social media platform. Users can manage accounts, interact with others, and perform typical social media actions, all secured by email/password login and token-based authentication.
 
 ## Installing using GitHub
 
